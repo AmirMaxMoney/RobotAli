@@ -1,23 +1,22 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Amir Game Center</title>
+
+<script src="https://sdk.crazygames.com/crazygames-sdk-v2.js"></script>
 
 <style>
 body {
   margin:0;
   background:#0d0f13;
   color:white;
-  font-family:Aviny;
+  font-family:sans-serif;
   display:flex;
   height:100vh;
   overflow:hidden;
 }
-	games {
-		font-family: Aviny;
-	}
 #sidebar{
   width:260px;
   background:#11151a;
@@ -25,10 +24,7 @@ body {
   overflow-y:auto;
   border-right:2px solid #1c242d;
 }
-#sidebar h2{
-  color:#00f2ff;
-  text-align:center;
-}
+#sidebar h2{color:#00f2ff;text-align:center}
 .game-btn{
   display:block;
   width:100%;
@@ -43,33 +39,28 @@ body {
 }
 .game-btn:hover{
   background:#00c9d1;
-  color:#000;
+  color:black;
   font-weight:bold;
 }
-#main{
+#game-container{
   flex:1;
   display:flex;
-  flex-direction:column;
+  justify-content:center;
+  align-items:center;
 }
 #search{
-  padding:12px;
-  border:none;
+  padding:10px;
+  width:100%;
   background:#1c242d;
   color:white;
-  font-size:16px;
-  outline:none;
-}
-#game-frame{
-  flex:1;
-  width:100%;
   border:none;
-}
-@media(max-width:768px){
-  #sidebar{width:140px;font-size:13px}
-  .game-btn{padding:8px;font-size:12px}
+  outline:none;
+  margin-bottom:10px;
+  border-radius:4px;
 }
 </style>
 </head>
+
 <body>
 
 <div id="sidebar">
@@ -78,9 +69,7 @@ body {
   <div id="game-list"></div>
 </div>
 
-<div id="main">
-  <iframe id="game-frame" allow="fullscreen"></iframe>
-</div>
+<div id="game-container"></div>
 
 <script>
 const games = [
@@ -88,71 +77,38 @@ const games = [
   ["Basket Bros", "basket-bros"],
   ["Madalin Stunt Cars 2", "madalin-stunt-cars-2"],
   ["Moto X3M", "moto-x3m"],
-  ["Moto X3M 2", "moto-x3m-2"],
-  ["Moto X3M 3", "moto-x3m-3"],
-  ["Moto X3M 4 Winter", "moto-x3m-4-winter"],
-  ["Moto X3M 5 Pool Party", "moto-x3m-5-pool-party"],
-  ["Shell Shockers", "shellshockers"],
   ["Bullet Force", "bullet-force"],
-  ["Mini Royale Nations", "mini-royale-2"],
-  ["Zombs Royale", "zombs-royale"],
-  ["War Brokers", "war-brokers"],
-  ["Krunker.io", "krunker"],
-  ["Paper.io 2", "paper-io-2"],
-  ["Hole.io", "hole-io"],
-  ["Slither.io", "slither-io"],
-  ["Agar.io", "agar-io"],
-  ["2048", "2048"],
-  ["Cut The Rope", "cut-the-rope"],
-  ["Temple of Boom", "temple-of-boom"],
-  ["Getaway Shootout", "getaway-shootout"],
-  ["Venge.io", "venge"],
-  ["Ev.io", "ev-io"],
-  ["Superhex.io", "superhex-io"],
+  ["Shell Shockers", "shellshockers"],
   ["Smash Karts", "smash-karts"],
-  ["Drift Boss", "drift-boss"],
-  ["Rooftop Snipers", "rooftop-snipers"],
-  ["Rooftop Snipers 2", "rooftop-snipers-2"],
-  ["Fireboy and Watergirl", "fireboy-and-watergirl"],
-  ["8 Ball Pool", "8-ball-pool"],
-  ["Soccer Random", "soccer-random"],
-  ["Basket Random", "basket-random"],
-  ["Volley Random", "volley-random"],
-  ["Boxing Random", "boxing-random"],
-  ["Gun Mayhem 2", "gun-mayhem-2"],
   ["Stickman Hook", "stickman-hook"],
-  ["Short Life", "short-life"],
-  ["Happy Wheels (Demo)", "happy-wheels"],
-  ["Among Us Online", "among-us-single-player"],
-  ["Tank Trouble 2", "tank-trouble-2"],
-  ["Tetris", "tetris"],
-  ["Sushi Party", "sushi-party"],
-  ["Parking Fury 3D", "parking-fury-3d"],
-  ["Rally Racer Dirt", "rally-racer-dirt"],
-  ["Pixel Gun Apocalypse 2", "pixel-gun-apocalypse-2"],
-  ["Pixel Warfare 5", "pixel-warfare-5"],
-  ["Pixel Combat 2", "pixel-combat-2"],
-  ["Amazing Strange Rope Police", "amazing-strange-rope-police"],
-  ["JustFall.LOL", "justfall-lol"],
-  ["Head Soccer 2022", "head-soccer-2022"]
+  ["Getaway Shootout", "getaway-shootout"],
+  ["Rooftop Snipers", "rooftop-snipers"],
+  ["Cut The Rope", "cut-the-rope"],
+  ["2048", "2048"]
 ];
 
 const list = document.getElementById("game-list");
-const frame = document.getElementById("game-frame");
+const container = document.getElementById("game-container");
 
 games.forEach(g=>{
   list.innerHTML += `<button class="game-btn" onclick="loadGame('${g[1]}')">🎯 ${g[0]}</button>`;
 });
 
-function loadGame(id){
-  frame.src = "https://www.crazygames.com/game/"+id+"?embed";
+async function loadGame(gameId){
+  container.innerHTML = `<h3>⏳ Loading game...</h3>`;
+  try {
+    await CrazyGames.SDK.game.load(gameId, container);
+  } catch(err){
+    container.innerHTML = `<h3 style="color:red">❌ مشکل در اجرای بازی</h3>`;
+    console.error(err);
+  }
 }
 
 function searchGame(){
-  let input = document.getElementById("search").value.toLowerCase();
+  const text = document.getElementById("search").value.toLowerCase();
   document.querySelectorAll(".game-btn").forEach(btn=>{
-    btn.style.display = btn.innerText.toLowerCase().includes(input) ? "block" : "none";
-  })
+    btn.style.display = btn.innerText.toLowerCase().includes(text) ? "block" : "none";
+  });
 }
 </script>
 
