@@ -1,61 +1,158 @@
 <!DOCTYPE html>
 <html lang="fa">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>چت رباتعلی</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Amir Game Center</title>
+
 <style>
-body {font-family: sans-serif; background:#0f172a; color:white; padding:20px;}
-#chat {height:75vh; overflow-y:auto; background:#1e293b; padding:15px; border-radius:12px;}
-.msg {margin:10px 0; padding:10px; border-radius:8px;}
-.user {background:#2563eb; text-align:right;}
-.bot {background:#334155;}
-input {width:80%; padding:10px; border:none; border-radius:6px;}
-button {padding:10px 15px; border:none; border-radius:6px; background:#10b981; color:white;}
+body {
+  margin:0;
+  background:#0d0f13;
+  color:white;
+  font-family:Aviny;
+  display:flex;
+  height:100vh;
+  overflow:hidden;
+}
+	games {
+		font-family: Aviny;
+	}
+#sidebar{
+  width:260px;
+  background:#11151a;
+  padding:15px;
+  overflow-y:auto;
+  border-right:2px solid #1c242d;
+}
+#sidebar h2{
+  color:#00f2ff;
+  text-align:center;
+}
+.game-btn{
+  display:block;
+  width:100%;
+  background:#1a222c;
+  border:1px solid #2b3642;
+  padding:10px;
+  margin:6px 0;
+  color:white;
+  cursor:pointer;
+  border-radius:6px;
+  text-align:left;
+}
+.game-btn:hover{
+  background:#00c9d1;
+  color:#000;
+  font-weight:bold;
+}
+#main{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+}
+#search{
+  padding:12px;
+  border:none;
+  background:#1c242d;
+  color:white;
+  font-size:16px;
+  outline:none;
+}
+#game-frame{
+  flex:1;
+  width:100%;
+  border:none;
+}
+@media(max-width:768px){
+  #sidebar{width:140px;font-size:13px}
+  .game-btn{padding:8px;font-size:12px}
+}
 </style>
 </head>
 <body>
 
-<h2>🤖 چت با رباتعلی</h2>
-<div id="chat"></div>
+<div id="sidebar">
+  <h2>🎮 Games</h2>
+  <input id="search" placeholder="Search game..." onkeyup="searchGame()">
+  <div id="game-list"></div>
+</div>
 
-<br>
-<input id="inp" placeholder="هرچی میخوای بپرس ...">
-<button onclick="ask()">ارسال</button>
+<div id="main">
+  <iframe id="game-frame" allow="fullscreen"></iframe>
+</div>
 
 <script>
-const API_KEY = "AIzaSyByzB4da3BW9WTtwdBn8ZPeDKsNQ_pnY5w";  // 👈 API رو اینجا قرار بده
-const chatBox = document.getElementById("chat");
+const games = [
+  ["Crazy Roll 3D", "crazy-roll-3d"],
+  ["Basket Bros", "basket-bros"],
+  ["Madalin Stunt Cars 2", "madalin-stunt-cars-2"],
+  ["Moto X3M", "moto-x3m"],
+  ["Moto X3M 2", "moto-x3m-2"],
+  ["Moto X3M 3", "moto-x3m-3"],
+  ["Moto X3M 4 Winter", "moto-x3m-4-winter"],
+  ["Moto X3M 5 Pool Party", "moto-x3m-5-pool-party"],
+  ["Shell Shockers", "shellshockers"],
+  ["Bullet Force", "bullet-force"],
+  ["Mini Royale Nations", "mini-royale-2"],
+  ["Zombs Royale", "zombs-royale"],
+  ["War Brokers", "war-brokers"],
+  ["Krunker.io", "krunker"],
+  ["Paper.io 2", "paper-io-2"],
+  ["Hole.io", "hole-io"],
+  ["Slither.io", "slither-io"],
+  ["Agar.io", "agar-io"],
+  ["2048", "2048"],
+  ["Cut The Rope", "cut-the-rope"],
+  ["Temple of Boom", "temple-of-boom"],
+  ["Getaway Shootout", "getaway-shootout"],
+  ["Venge.io", "venge"],
+  ["Ev.io", "ev-io"],
+  ["Superhex.io", "superhex-io"],
+  ["Smash Karts", "smash-karts"],
+  ["Drift Boss", "drift-boss"],
+  ["Rooftop Snipers", "rooftop-snipers"],
+  ["Rooftop Snipers 2", "rooftop-snipers-2"],
+  ["Fireboy and Watergirl", "fireboy-and-watergirl"],
+  ["8 Ball Pool", "8-ball-pool"],
+  ["Soccer Random", "soccer-random"],
+  ["Basket Random", "basket-random"],
+  ["Volley Random", "volley-random"],
+  ["Boxing Random", "boxing-random"],
+  ["Gun Mayhem 2", "gun-mayhem-2"],
+  ["Stickman Hook", "stickman-hook"],
+  ["Short Life", "short-life"],
+  ["Happy Wheels (Demo)", "happy-wheels"],
+  ["Among Us Online", "among-us-single-player"],
+  ["Tank Trouble 2", "tank-trouble-2"],
+  ["Tetris", "tetris"],
+  ["Sushi Party", "sushi-party"],
+  ["Parking Fury 3D", "parking-fury-3d"],
+  ["Rally Racer Dirt", "rally-racer-dirt"],
+  ["Pixel Gun Apocalypse 2", "pixel-gun-apocalypse-2"],
+  ["Pixel Warfare 5", "pixel-warfare-5"],
+  ["Pixel Combat 2", "pixel-combat-2"],
+  ["Amazing Strange Rope Police", "amazing-strange-rope-police"],
+  ["JustFall.LOL", "justfall-lol"],
+  ["Head Soccer 2022", "head-soccer-2022"]
+];
 
-function addMsg(text, who){
-    const div = document.createElement("div");
-    div.className = "msg " + who;
-    div.innerText = text;
-    chatBox.appendChild(div);
-    chatBox.scrollTop = chatBox.scrollHeight;
+const list = document.getElementById("game-list");
+const frame = document.getElementById("game-frame");
+
+games.forEach(g=>{
+  list.innerHTML += `<button class="game-btn" onclick="loadGame('${g[1]}')">🎯 ${g[0]}</button>`;
+});
+
+function loadGame(id){
+  frame.src = "https://www.crazygames.com/game/"+id+"?embed";
 }
 
-async function ask(){
-    const q = document.getElementById("inp").value;
-    addMsg(q, "user");
-    document.getElementById("inp").value = "";
-
-    addMsg("رباتعلی داره فکر می‌کنه...", "bot");
-
-    const res = await fetch(
-    `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${API_KEY}`,
-    {
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body: JSON.stringify({
-            contents:[{parts:[{text:q}]}]
-        })
-    });
-
-    const data = await res.json();
-    const ans = data.candidates[0].content.parts[0].text;
-
-    document.querySelector(".bot:last-child").innerText = ans;
+function searchGame(){
+  let input = document.getElementById("search").value.toLowerCase();
+  document.querySelectorAll(".game-btn").forEach(btn=>{
+    btn.style.display = btn.innerText.toLowerCase().includes(input) ? "block" : "none";
+  })
 }
 </script>
 
