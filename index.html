@@ -1,114 +1,137 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fa" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Amir Game Center</title>
-
-<script src="https://sdk.crazygames.com/crazygames-sdk-v2.js"></script>
-
+<title>RobotAli</title>
 <style>
 body {
   margin:0;
-  background:#0d0f13;
+  font-family: Aviny, sans-serif;
+  background:#0f172a;
   color:white;
-  font-family:sans-serif;
-  display:flex;
-  height:100vh;
-  overflow:hidden;
-}
-#sidebar{
-  width:260px;
-  background:#11151a;
-  padding:15px;
-  overflow-y:auto;
-  border-right:2px solid #1c242d;
-}
-#sidebar h2{color:#00f2ff;text-align:center}
-.game-btn{
-  display:block;
-  width:100%;
-  background:#1a222c;
-  border:1px solid #2b3642;
-  padding:10px;
-  margin:6px 0;
-  color:white;
-  cursor:pointer;
-  border-radius:6px;
-  text-align:left;
-}
-.game-btn:hover{
-  background:#00c9d1;
-  color:black;
-  font-weight:bold;
-}
-#game-container{
-  flex:1;
   display:flex;
   justify-content:center;
   align-items:center;
+  height:100vh;
 }
-#search{
+#container{
+  width:95%;
+  max-width:600px;
+  background:#1e293b;
+  border-radius:15px;
+  padding:15px;
+  display:flex;
+  flex-direction:column;
+  height:85vh;
+}
+#chat{
+  flex:1;
+  overflow-y:auto;
   padding:10px;
-  width:100%;
-  background:#1c242d;
-  color:white;
-  border:none;
-  outline:none;
+  border-radius:8px;
+  background:#334155;
   margin-bottom:10px;
-  border-radius:4px;
+}
+.msg{
+  margin:8px 0;
+  padding:10px;
+  border-radius:7px;
+  max-width:80%;
+}
+.user{background:#2563eb; align-self:flex-end;}
+.bot{background:#475569; align-self:flex-start;}
+#inputBar{display:flex; gap:5px;}
+input{
+  flex:1;
+  padding:10px;
+  border:none;
+  border-radius:7px;
+  outline:none;
+}
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:7px;
+  background:#22c55e;
+  color:white;
+  cursor:pointer;
+}
+#apiBox{
+  margin-bottom:8px;
+  display:flex;
+  gap:5px;
+}
+#apiKey{
+  flex:1;
+  padding:6px;
+  border:none;
+  border-radius:6px;
 }
 </style>
 </head>
-
 <body>
 
-<div id="sidebar">
-  <h2>🎮 Games</h2>
-  <input id="search" placeholder="Search game..." onkeyup="searchGame()">
-  <div id="game-list"></div>
+<div id="container">
+  <div id="apiBox">
+    <input id="apiKey" type="password" placeholder="API Key گوگل، DeepSeek یا Grok رو اینجا تایپ کن">
+    <button onclick="saveKey()">ذخیره</button>
+  </div>
+
+  <div id="chat"></div>
+
+  <div id="inputBar">
+    <input id="msg" placeholder="بزن ببین چی میگی 😎">
+    <button onclick="sendMsg()">ارسال</button>
+  </div>
 </div>
 
-<div id="game-container"></div>
-
 <script>
-const games = [
-  ["Crazy Roll 3D", "crazy-roll-3d"],
-  ["Basket Bros", "basket-bros"],
-  ["Madalin Stunt Cars 2", "madalin-stunt-cars-2"],
-  ["Moto X3M", "moto-x3m"],
-  ["Bullet Force", "bullet-force"],
-  ["Shell Shockers", "shellshockers"],
-  ["Smash Karts", "smash-karts"],
-  ["Stickman Hook", "stickman-hook"],
-  ["Getaway Shootout", "getaway-shootout"],
-  ["Rooftop Snipers", "rooftop-snipers"],
-  ["Cut The Rope", "cut-the-rope"],
-  ["2048", "2048"]
-];
+let API_KEY = "";
 
-const list = document.getElementById("game-list");
-const container = document.getElementById("game-container");
-
-games.forEach(g=>{
-  list.innerHTML += `<button class="game-btn" onclick="loadGame('${g[1]}')">🎯 ${g[0]}</button>`;
-});
-
-async function loadGame(gameId){
-  container.innerHTML = `<h3>⏳ Loading game...</h3>`;
-  try {
-    await CrazyGames.SDK.game.load(gameId, container);
-  } catch(err){
-    container.innerHTML = `<h3 style="color:red">❌ مشکل در اجرای بازی</h3>`;
-    console.error(err);
-  }
+function saveKey(){
+  API_KEY = document.getElementById('apiKey').value;
+  alert("کلید ذخیره شد ✅ حالا چت کن بریم!");
 }
 
-function searchGame(){
-  const text = document.getElementById("search").value.toLowerCase();
-  document.querySelectorAll(".game-btn").forEach(btn=>{
-    btn.style.display = btn.innerText.toLowerCase().includes(text) ? "block" : "none";
-  });
+function addMsg(text, sender){
+  const chat = document.getElementById('chat');
+  const div = document.createElement('div');
+  div.className = `msg ${sender}`;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+async function sendMsg(){
+  const input = document.getElementById('msg');
+  const text = input.value.trim();
+  if(!text) return;
+  addMsg(text, "user");
+  input.value = "";
+
+  if(!API_KEY){
+    addMsg("داداش اول API رو بذار بالا ☝️", "bot");
+    return;
+  }
+
+  addMsg("صبر کن ببینم چی میشه 😎...", "bot");
+
+  try {
+    const res = await fetch("https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent?key=" + API_KEY, {
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body: JSON.stringify({
+        contents: [{role:"user", parts:[{text}]}]
+      })
+    });
+    const data = await res.json();
+    const reply = data.candidates?.[0]?.content?.parts?.[0]?.text;
+    addMsg(reply || "چی بگم والله جواب نگرفتم 🤷‍♂️", "bot");
+
+  } catch(e){
+    addMsg("خطا داد! فک کنم اینترنت یا API مشکل داره 😬", "bot");
+  }
 }
 </script>
 
